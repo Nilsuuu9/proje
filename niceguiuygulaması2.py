@@ -79,44 +79,41 @@ def handle_inputs(time_range, start_date, end_date, stock_symbol):
     plt.legend()
     plt.grid()
 
-    # Her analiz için yeni grafik kaydetme
-    grafik_dosyasi = f"grafik_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+    # Grafiği kaydet
+    grafik_dosyasi = "grafik.png"
     plt.savefig(grafik_dosyasi)
     plt.close()
 
     return f"Başlangıç Tarihi: {start_date}\nBitiş Tarihi: {end_date}", grafik_dosyasi
 
 # NiceGUI arayüzü
-with ui.page(path="/") as page:  # path parametresi eklenmiştir
-    with ui.column().classes("bg-gray-100 p-8 rounded shadow-lg max-w-screen-md mx-auto"):
-        ui.label("Hisse Senedi Analiz Uygulaması").classes('text-3xl font-bold text-blue-600 mb-4 text-center')
+with ui.row().classes('p-4'):
+    ui.label("Hisse Senedi Analiz Uygulaması").classes('text-xl font-bold')
 
-        with ui.card().classes("p-4 bg-white shadow-md"):
-            ui.label("Zaman Aralığını Seçin").classes("text-lg font-semibold")
-            time_range = ui.radio(
-                options=["Son 6 Ay", "Son 1 Yıl", "Son 2 Yıl", "Manuel"]
-            ).classes("my-4")
+# Zaman aralığı seçimi için açıklama ve radio düğmeleri
+ui.label("Zaman Aralığını Seçin:")
+time_range = ui.radio(
+    options=["Son 6 Ay", "Son 1 Yıl", "Son 2 Yıl", "Manuel"]
+)
 
-        with ui.card().classes("p-4 bg-white shadow-md"):
-            ui.label("Tarih Bilgileri").classes("text-lg font-semibold mb-2")
-            start_date = ui.input(label="Başlangıç Tarihi (YYYY-MM-DD)").classes("w-full mb-2")
-            end_date = ui.input(label="Bitiş Tarihi (YYYY-MM-DD)").classes("w-full mb-4")
+# Tarih ve hisse senedi sembolü giriş alanları
+start_date = ui.input(label="Başlangıç Tarihi (YYYY-MM-DD)")
+end_date = ui.input(label="Bitiş Tarihi (YYYY-MM-DD)")
+stock_symbol = ui.input(label="Hisse Senedi Sembolü (Örn: MSFT, AAPL)")
 
-        with ui.card().classes("p-4 bg-white shadow-md"):
-            ui.label("Hisse Senedi Bilgileri").classes("text-lg font-semibold mb-2")
-            stock_symbol = ui.input(label="Hisse Senedi Sembolü (Örn: MSFT, AAPL)").classes("w-full mb-4")
+# Sonuç mesajı ve grafik için alan
+result = ui.label("")
+grafik = ui.image()
 
-        result = ui.label("").classes("text-red-500 font-semibold mt-4")
-        grafik = ui.image().style('max-height: 500px;').classes("my-4")
+# Analiz çalıştırma fonksiyonu
+def run_analysis():
+    result_text, grafik_dosyasi = handle_inputs(
+        time_range.value, start_date.value, end_date.value, stock_symbol.value
+    )
+    result.set_text(result_text)
+    if grafik_dosyasi:
+        grafik.set_source(grafik_dosyasi)
 
-        def run_analysis():
-            result_text, grafik_dosyasi = handle_inputs(
-                time_range.value, start_date.value, end_date.value, stock_symbol.value
-            )
-            result.set_text(result_text)
-            if grafik_dosyasi:
-                grafik.set_source(grafik_dosyasi)
-
-        ui.button("Analizi Çalıştır", on_click=run_analysis).classes('bg-blue-600 text-white p-4 rounded shadow-lg hover:bg-blue-700 mt-4')
+ui.button("Analizi Çalıştır", on_click=run_analysis)
 
 ui.run()
